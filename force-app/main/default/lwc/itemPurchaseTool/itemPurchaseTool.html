@@ -1,3 +1,47 @@
 <template>
-    
+  <lightning-card title="Item Purchase Tool">
+    <template if:true={account}>
+      <p class="slds-p-horizontal_small">
+        <b>Account:</b> {account.Name}<br />
+        <b>Number:</b> {account.AccountNumber}<br />
+        <b>Industry:</b> {account.Industry}
+      </p>
+    </template>
+
+    <div class="slds-p-horizontal_small">
+	  <h2>FILTERS</h2>
+      <lightning-combobox
+        name="family"
+        label="Filter by Family"
+        value={selectedFamily}
+        options={familyOptions}
+        onchange={handleFamilyChange}>
+      </lightning-combobox>
+
+      <lightning-combobox
+        name="type"
+        label="Filter by Type"
+        value={selectedType}
+        options={typeOptions}
+        onchange={handleTypeChange}>
+      </lightning-combobox>
+	</div>
+	
+      <lightning-input
+        label="Search"
+        value={searchText}
+        onchange={handleSearchChange}>
+      </lightning-input>
+
+      <p>{filteredItems.length} items found</p>
+
+    <div class="slds-grid slds-wrap">
+      <template for:each={filteredItems} for:item="item">
+        <c-item-tile key={item.Id} item={item} onaddtocart={handleAddToCart}></c-item-tile>
+      </template>
+    </div>
+
+    <lightning-button label="Cart" onclick={openCart}></lightning-button>
+
+  </lightning-card>
 </template>
