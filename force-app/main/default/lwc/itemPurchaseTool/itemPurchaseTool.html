@@ -42,6 +42,11 @@
     </div>
 
     <lightning-button label="Cart" onclick={openCart}></lightning-button>
-
+    <template if:true={showItemModal}>
+      <c-item-modal key={item.Id}
+             item={item}
+             onaddtocart={handleAddToCart}
+             ondetails={handleItemDetails}></c-item-tile> onclose={closeItemModal}></c-item-modal>
+    </template>
   </lightning-card>
 </template>

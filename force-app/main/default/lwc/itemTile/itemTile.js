@@ -5,6 +5,9 @@ export default class ItemTile extends LightningElement {
 
   handleDetails() {
     alert(`Item Details:\n\nName: ${this.item.Name}\nDescription: ${this.item.Description__c}`);
+	this.dispatchEvent(new CustomEvent('details', {
+      detail: this.item
+    }));
   }
 
   handleAddToCart() {

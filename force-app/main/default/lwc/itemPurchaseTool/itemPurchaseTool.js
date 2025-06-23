@@ -10,6 +10,8 @@ export default class ItemPurchaseTool extends LightningElement {
   @track selectedType = '';
   @track searchText = '';
   @track isCartOpen = false;
+  @track selectedItem = null;
+  @track showItemModal = false;
 
   get familyOptions() {
     return [
@@ -64,6 +66,16 @@ export default class ItemPurchaseTool extends LightningElement {
   handleAddToCart(event) {
     const item = event.detail;
     this.cart.push({ ...item, quantity: 1 });
+  }
+  
+  handleItemDetails(event) {
+  this.selectedItem = event.detail;
+  this.showItemModal = true;
+  }
+
+  closeItemModal() {
+  this.selectedItem = null;
+  this.showItemModal = false;
   }
 
   openCart() {
