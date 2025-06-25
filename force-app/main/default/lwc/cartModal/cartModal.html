@@ -1,0 +1,29 @@
+<template>
+  <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+    <div class="slds-modal__container">
+      <header class="slds-modal__header">
+        <h2 class="slds-text-heading_medium">Cart</h2>
+      </header>
+
+      <div class="slds-modal__content slds-p-around_medium">
+        <template if:true={items.length}>
+          <lightning-datatable
+            key-field="Id"
+            data={items}
+            columns={columns}>
+          </lightning-datatable>
+        </template>
+        <template if:false={items.length}>
+          <p>Your cart is empty.</p>
+        </template>
+      </div>
+
+      <footer class="slds-modal__footer">
+        <lightning-button variant="neutral" label="Close" onclick={handleClose}></lightning-button>
+        <lightning-button variant="brand" label="Checkout" onclick={handleCheckout} class="slds-m-left_small" disabled={isCheckoutDisabled}></lightning-button>
+      </footer>
+    </div>
+  </section>
+
+  <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

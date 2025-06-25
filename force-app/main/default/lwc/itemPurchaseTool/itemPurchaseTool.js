@@ -1,8 +1,10 @@
 import { LightningElement, track, api } from 'lwc';
 import getAccount from '@salesforce/apex/PurchaseController.getAccount';
 import getItems from '@salesforce/apex/ItemController.getItems';
+import createPurchase from '@salesforce/apex/PurchaseController.createPurchase';
+import { NavigationMixin } from 'lightning/navigation';
 
-export default class ItemPurchaseTool extends LightningElement {
+export default class ItemPurchaseTool extends NavigationMixin(LightningElement) {
   @track account;
   @track items = [];
   @track cart = [];
@@ -86,7 +88,35 @@ export default class ItemPurchaseTool extends LightningElement {
     this.isCartOpen = false;
   }
 
-  handleCheckout() {
-	  
+  async handleCheckout() {
+    if (!this.account || this.cart.length === 0) return;
+
+    try {
+      const cartToSend = this.cart.map(item => ({
+        Id: item.Id,
+        Price__c: item.Price__c,
+        quantity: item.quantity
+      }));
+
+      const purchaseId = await createPurchase({
+        accountId: this.account.Id,
+        cart: cartToSend
+      });
+
+      this.isCartOpen = false;
+      this.cart = [];
+
+      this[NavigationMixin.Navigate]({
+        type: 'standard__recordPage',
+        attributes: {
+          recordId: purchaseId,
+          objectApiName: 'Purchase__c',
+          actionName: 'view'
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      alert('Error while creating purchase');
+    }
   }
 }

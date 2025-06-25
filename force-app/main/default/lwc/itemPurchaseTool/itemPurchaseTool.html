@@ -48,5 +48,9 @@
              onaddtocart={handleAddToCart}
              ondetails={handleItemDetails}></c-item-tile> onclose={closeItemModal}></c-item-modal>
     </template>
+	<template if:true={isCartOpen}>
+	  <c-cart-modal items={cart} oncheckout={handleCheckout} onclose={closeCart}></c-cart-modal>
+	</template>
+
   </lightning-card>
 </template>
