@@ -46,11 +46,19 @@
       <c-item-modal key={item.Id}
              item={item}
              onaddtocart={handleAddToCart}
-             ondetails={handleItemDetails}></c-item-tile> onclose={closeItemModal}></c-item-modal>
+             ondetails={handleItemDetails} 
+			 onclose={closeItemModal}></c-item-modal>
     </template>
 	<template if:true={isCartOpen}>
 	  <c-cart-modal items={cart} oncheckout={handleCheckout} onclose={closeCart}></c-cart-modal>
 	</template>
+	<template if:true={isManager}>
+      <lightning-button label="Create Item" onclick={openCreateItemModal}></lightning-button>
+    </template>
+
+    <template if:true={showCreateItemModal}>
+      <c-create-item-modal onclose={closeCreateItemModal}></c-create-item-modal>
+    </template>
 
   </lightning-card>
 </template>

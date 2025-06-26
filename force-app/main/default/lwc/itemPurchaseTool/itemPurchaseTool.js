@@ -2,7 +2,8 @@ import { LightningElement, track, api } from 'lwc';
 import getAccount from '@salesforce/apex/PurchaseController.getAccount';
 import getItems from '@salesforce/apex/ItemController.getItems';
 import createPurchase from '@salesforce/apex/PurchaseController.createPurchase';
-import { NavigationMixin } from 'lightning/navigation';
+import { NavigationMixin } from 'lightning/navigation'
+import checkIsManager from '@salesforce/apex/UserController.checkIsManager';
 
 export default class ItemPurchaseTool extends NavigationMixin(LightningElement) {
   @track account;
@@ -14,6 +15,8 @@ export default class ItemPurchaseTool extends NavigationMixin(LightningElement) 
   @track isCartOpen = false;
   @track selectedItem = null;
   @track showItemModal = false;
+  @track showCreateItemModal = false;
+  @track isManager = false;
 
   get familyOptions() {
     return [
@@ -39,19 +42,42 @@ export default class ItemPurchaseTool extends NavigationMixin(LightningElement) 
               item.Name.toLowerCase().includes(this.searchText.toLowerCase()) || 
               (item.Description__c && item.Description__c.toLowerCase().includes(this.searchText.toLowerCase())));
     });
+	// return this.items;
   }
 
   connectedCallback() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const accountId = urlParams.get('accountId');
+    const accountId = '001Au00000rtZJfIAM';
+ 
     if (accountId) {
       getAccount({ accountId })
-        .then(result => { this.account = result; });
+        .then(result => {
+          console.log('Loaded account:', result);
+          this.account = result;
+        })
+        .catch(error => {
+          console.error('Error loading account:', error);
+        });
 
       getItems()
-        .then(data => { this.items = data; });
+        .then(data => {
+          console.log('Items:', data);
+          this.items = data;
+        })
+        .catch(error => {
+          console.error('Error loading items:', error);
+        });
+
+      checkIsManager()
+        .then(val => {
+          this.isManager = val;
+          console.log('IsManager:', val);
+        })
+        .catch(err => console.error('Manager check failed', err));
+    } else {
+      console.warn('accountId is missing from URL');
     }
   }
+
 
   handleFamilyChange(event) {
     this.selectedFamily = event.detail.value;
@@ -66,18 +92,22 @@ export default class ItemPurchaseTool extends NavigationMixin(LightningElement) 
   }
 
   handleAddToCart(event) {
-    const item = event.detail;
-    this.cart.push({ ...item, quantity: 1 });
+    const item = JSON.parse(JSON.stringify(event.detail));
+	console.log('Adding item to cart:', item);
+    this.cart = [...this.cart, { ...item, quantity: 1 }];
+	console.log('Cart length:', this.cart.length);
+	console.log('cart before send:', JSON.stringify(this.cart));
+	console.log('Current cart:', this.cart);
   }
   
   handleItemDetails(event) {
-  this.selectedItem = event.detail;
-  this.showItemModal = true;
+	this.selectedItem = event.detail;
+	this.showItemModal = true;
   }
 
   closeItemModal() {
-  this.selectedItem = null;
-  this.showItemModal = false;
+	this.selectedItem = null;
+	this.showItemModal = false;
   }
 
   openCart() {
@@ -87,20 +117,32 @@ export default class ItemPurchaseTool extends NavigationMixin(LightningElement) 
   closeCart() {
     this.isCartOpen = false;
   }
+  openCreateItemModal() {
+    this.showCreateItemModal = true;
+  }
+  closeCreateItemModal() {
+    this.showCreateItemModal = false;
+  }
 
   async handleCheckout() {
     if (!this.account || this.cart.length === 0) return;
 
     try {
-      const cartToSend = this.cart.map(item => ({
-        Id: item.Id,
-        Price__c: item.Price__c,
-        quantity: item.quantity
-      }));
+      const cartToSend = this.cart.map(item => {
+        console.log('Preparing item:', item); 
+        return { 
+            Id: item.Id + '',
+            price: Number(item.Price__c),
+            quantity: Number(item.quantity)
+        };
+    });
 
+	  console.log('Cart:', cartToSend);
+	  console.log('Account ID:', this.account.Id);
+	  console.log('Cart sending to Apex:', JSON.stringify(cartToSend, null, 2));
       const purchaseId = await createPurchase({
         accountId: this.account.Id,
-        cart: cartToSend
+        cartRaw: cartToSend
       });
 
       this.isCartOpen = false;
